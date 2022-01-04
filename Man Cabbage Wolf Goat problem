@@ -1,0 +1,141 @@
+"""
+Jason 11027273
+code reference: Rocky K. C. Chang
+"""
+def genStates():
+  """
+  Generate all posible states
+  combination of 4 element in which each of them contain E (East) or W (West)
+  each element in state stand for 1 of the 4 entites in the order of:
+  0 = Man
+  1 = Cabbage
+  2 = Goat
+  3 = Wolf
+  :return: all possible states
+  """
+  output = []
+  for i in range(16):
+    output.append(format(i, '04b').replace('0', 'E').replace('1', 'W'))
+  return output
+
+def isLegal(state):
+  """
+  Checking wheter if the state is legal by checking the state of each entity
+  :param state:
+  :return: true or false
+  """
+    # The if() statement expresses the condition for illegal state
+  if (state[1] == state[2] or state[2] == state[3]) and state[0] != state[2] :
+    return False
+  else:
+    return True
+
+# Creating a list of legal states
+legalStates = []
+allStates = genStates()
+for state in allStates:
+  if isLegal(state):
+    legalStates.append(state)
+
+def isNeighbour(state1, state2):
+  """
+  Checking the whether if the states is each other neighbour
+     by comparing the entity in each state
+  :param state1:
+  :param state2:
+  :return:
+  """
+
+  move = 0
+  if (state1[0] == state2[0]):  # If the man is not constantly moving
+    return False                # not each other's neighbour
+  else:
+    for i in range(1, 4, 1):
+        if (state1[i] != state2[i]):
+          move += 1
+    if (move > 1): # The man can only carry one at a time
+      return False # carry more than that is impossible, thus not each other's neighbour
+    else:
+      return True  # else it's the neighbour
+
+
+
+def genGraph(legal_states):
+  """
+  :param legal_states:
+  :return: Graph in the format of dictionary
+  """
+  dict = {}
+
+  """Using nested loop to check whether if it's neighbour"""
+  for i in range(len(legal_states)):
+    arr = [] # Temporary list
+    for j in range(len(legal_states)):
+      if (isNeighbour(legal_states[i], legal_states[j])):
+        arr.append(legal_states[j])
+    dict[legal_states[i]] = arr  # add the neighbour of the state
+
+  return dict # Graph in the format of dictionary
+
+
+def bfs(graph, start, end):
+  """
+    Using bread-first-search to find the shortest path
+  :param graph:
+  :param start: initial state
+  :param end: destination state
+  :return: a list of shortes path
+  """
+  queue = [] # Initialize a queue
+  queue.append([start])
+  while queue:
+    s = queue.pop(0)
+    node = s[-1]
+    if node == end:
+      return s
+    for neighbour in graph.get(node, []):
+      new_path = list(s)
+      new_path.append(neighbour)
+      queue.append(new_path)
+
+def desPath(shortest):
+  """
+    Describe the solution in order
+  :param shortest: list
+  :return: the solution
+  """
+
+  """Looping through all states"""
+  for i in range(1, len(shortest)):
+    self_move = True  # Check whether if the didn't carry anything
+    print(i, end="")
+    print(". The man takes", end="")
+
+    """Looping through each entity of every states (except for the man)"""
+    for entity in range(1, 4):
+      if (shortest[i][entity] != shortest[i - 1][entity]): # Comparing each element of two states
+        if (entity == 1):
+          print(" the cabbage", end="")
+          self_move = False # the man carry the cabbage
+        elif (entity == 2):
+          print(" the goat", end="")
+          self_move = False # the man carry the goat
+        elif (entity == 3):
+          print(" the wolf", end="")
+          self_move = False # the man carry the wolf
+
+    """Determine whether if the man move by himself or with an entity"""
+    if (self_move): # The man didn't carry anything
+      print(" himself", end="")
+
+    """Printing location"""
+    if (shortest[i][0] == 'E'):
+      print(" to the east.")
+    else:
+      print(" to the west.")
+
+"""Test code"""
+graph = genGraph(legalStates)
+shortest = bfs(graph, 'EEEE', 'WWWW')
+desPath(shortest)
+
